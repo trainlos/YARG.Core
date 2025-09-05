@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Text;
+using System.Collections.Generic;
 using YARG.Core.Song;
 
 namespace YARG.Core.IO
@@ -248,36 +249,37 @@ namespace YARG.Core.IO
                     case "real_guitar_tuning": RealGuitarTuning = YARGDTAReader.ExtractIntegerArray<int>(ref container); break;
                     case "real_bass_tuning": RealBassTuning = YARGDTAReader.ExtractIntegerArray<int>(ref container); break;
                     case "video_venues": VideoVenues = YARGDTAReader.ExtractStringArray(ref container); break;
+                    case "strings_author":
+                    {
+                        HashSet<String> authors = new HashSet<String>();
+                        if (Charter != SongMetadata.DEFAULT_CHARTER && !string.IsNullOrWhiteSpace(Charter))
+                        {
+                            authors.UnionWith(Charter.Split(", "));
+                        }
+                        authors.UnionWith(YARGDTAReader.ExtractText(ref container).Split(", "));
+                        Charter = string.Join(", ", authors);
+                    }
+                    break;
+                    case "keys_author":
+                    {
+                        HashSet<String> authors = new HashSet<String>();
+                        if (Charter != SongMetadata.DEFAULT_CHARTER && !string.IsNullOrWhiteSpace(Charter))
+                        {
+                            authors.UnionWith(Charter.Split(", "));
+                        }
+                        authors.UnionWith(YARGDTAReader.ExtractText(ref container).Split(", "));
+                        Charter = string.Join(", ", authors);
+                    }
+                    break;
                     case "extra_authoring":
                     {
-                        StringBuilder authors = new();
                         foreach (string str in YARGDTAReader.ExtractStringArray(ref container))
                         {
                             if (str == "disc_update")
                             {
                                 DiscUpdate = true;
                             }
-                            else
-                            {
-                                if (authors.Length == 0 && Charter == SongMetadata.DEFAULT_CHARTER)
-                                {
-                                    authors.Append(str);
-                                }
-                                else
-                                {
-                                    if (authors.Length == 0)
-                                        authors.Append(Charter);
-                                    authors.Append(", " + str);
-                                }
-                            }
                         }
-
-                        if (authors.Length == 0)
-                        {
-                            authors.Append(Charter);
-                        }
-
-                        Charter = authors.ToString();
                     }
                     break;
                 }
