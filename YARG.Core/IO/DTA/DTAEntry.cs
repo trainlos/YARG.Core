@@ -16,11 +16,13 @@ namespace YARG.Core.IO
         public TextSpan? Artist;
         public TextSpan? Album;
         public string? Genre;
+        public string? Subgenre;
         public TextSpan? Charter;
         public string? Source;
-        public string? Playlist;
+        public TextSpan? Playlist;
         public TextSpan? LoadingPhrase;
         public int? YearAsNumber;
+        public int? YearSecondaryAsNumber;
 
         public long? SongLength;
         public SongRating? SongRating;
@@ -36,7 +38,7 @@ namespace YARG.Core.IO
         public string? DrumBank;
         public string? VocalPercussionBank;
         public uint? VocalSongScrollSpeed;
-        public VocalGender? VocalGender;
+        public RbVocalGender? VocalGender;
         public uint? VocalTonicNote;
         public SongTonality? SongTonality;
         public int? TuningOffsetCents;
@@ -195,7 +197,14 @@ namespace YARG.Core.IO
                     case "solo": Soloes = YARGDTAReader.ExtractStringArray(ref container); break;
                     case "genre": Genre = YARGDTAReader.ExtractText(ref container); break;
                     case "decade": /*Decade = YARGDTAReader.ExtractText(ref container);*/ break;
-                    case "vocal_gender": VocalGender = YARGDTAReader.ExtractText(ref container) == "male" ? Song.VocalGender.Male : Song.VocalGender.Female; break;
+                    case "vocal_gender":
+                        VocalGender = YARGDTAReader.ExtractText(ref container) switch
+                        {
+                            "male"   => RbVocalGender.Male,
+                            "female" => RbVocalGender.Female,
+                            _        => RbVocalGender.Unspecified
+                        };
+                        break;
                     case "format": /*Format = YARGDTAReader.Extract<uint>(ref container);*/ break;
                     case "version": VenueVersion = YARGDTAReader.ExtractInteger<uint>(ref container); break;
                     case "fake": /*IsFake = YARGDTAReader.ExtractText(ref container);*/ break;
@@ -225,17 +234,17 @@ namespace YARG.Core.IO
                     case "rating": SongRating = (SongRating) YARGDTAReader.ExtractInteger<uint>(ref container); break;
                     case "short_version": /*ShortVersion = YARGDTAReader.Extract<uint>(ref container);*/ break;
                     case "album_art": /*HasAlbumArt = YARGDTAReader.ExtractBoolean(ref container);*/ break;
-                    case "year_released":
-                    case "year_recorded": YearAsNumber = YARGDTAReader.ExtractInteger<int>(ref container); break;
+                    case "year_released": YearAsNumber = YARGDTAReader.ExtractInteger<int>(ref container); break;
+                    case "year_recorded": YearSecondaryAsNumber = YARGDTAReader.ExtractInteger<int>(ref container); break;
                     case "date_released": YearAsNumber = int.Parse(YARGDTAReader.ExtractText(ref container).AsSpan(0, 4)); break;
                     case "album_name": Album = YARGDTAReader.ExtractTextBytes(ref container); break;
                     case "album_track_number": AlbumTrack = YARGDTAReader.ExtractInteger<int>(ref container); break;
-                    case "pack_name": Playlist = YARGDTAReader.ExtractText(ref container); break;
+                    case "pack_name": Playlist = YARGDTAReader.ExtractTextBytes(ref container); break;
                     case "base_points": /*BasePoints = YARGDTAReader.Extract<uint>(ref container);*/ break;
                     case "band_fail_cue": /*BandFailCue = YARGDTAReader.ExtractText(ref container);*/ break;
                     case "drum_bank": DrumBank = YARGDTAReader.ExtractText(ref container); break;
                     case "song_length": SongLength = YARGDTAReader.ExtractInteger<long>(ref container); break;
-                    case "sub_genre": /*Subgenre = YARGDTAReader.ExtractText(ref container);*/ break;
+                    case "sub_genre": Subgenre = YARGDTAReader.ExtractText(ref container); break;
                     case "author": Charter = YARGDTAReader.ExtractTextBytes(ref container); break;
                     case "guide_pitch_volume": /*GuidePitchVolume = YARGDTAReader.Extract<float>(ref container);*/ break;
                     case "encoding":
@@ -308,6 +317,18 @@ namespace YARG.Core.IO
                     }
                 }
             }
+        }
+
+        public static VocalGender ConvertVocalGender(RbVocalGender? rbGender)
+        {
+            return rbGender switch
+            {
+                RbVocalGender.Female => Song.VocalGender.Female,
+                RbVocalGender.Male => Song.VocalGender.Male,
+                RbVocalGender.Unspecified => Song.VocalGender.Unspecified,
+                null => Song.VocalGender.Unspecified,
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
 
         public static DTAEntry Create(string nodename, YARGTextContainer<byte> container)
