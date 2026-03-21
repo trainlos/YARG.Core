@@ -76,33 +76,6 @@ namespace YARG.Core.IO
                     case "name": Name = YARGDTAReader.ExtractTextBytes(ref container); break;
                     case "artist": Artist = YARGDTAReader.ExtractTextBytes(ref container); break;
                     case "master": IsMaster = YARGDTAReader.ExtractBoolean_FlippedDefault(ref container); break;
-                    // case "context":
-                    //     unsafe
-                    //     {
-                    //         int scopeLevel = 1;
-                    //         while (!container.IsAtEnd())
-                    //         {
-                    //             int ch = container.Get();
-                    //             if (ch == ')')
-                    //             {
-                    //                 --scopeLevel;
-                    //                 break;
-                    //             }
-                    //             ++container.Position;
-
-                    //             switch (ch)
-                    //             {
-                    //                 case '{': ++scopeLevel; break;
-                    //                 case '}': --scopeLevel; break;
-                    //             }
-                    //         }
-
-                    //         if (scopeLevel != 0)
-                    //         {
-                    //             throw new Exception("Invalid Context - Unbalanced brace count!");
-                    //         }
-                    //         break;
-                    //     }
                     case "song":
                         while (YARGDTAReader.StartNode(ref container))
                         {
